@@ -5,6 +5,20 @@
 
 
 
+
+
+struct defineVars{
+
+			char * name;
+			char * typeVar;
+			char * valueStore;
+			struct defineVars * next ;
+
+};
+
+
+
+
 void scannText(char * text);
 char * aloc(int n);
 char ** alocScan(int  n,int l);
@@ -21,14 +35,15 @@ void executeCommandsLinux();
 char * FILENAME;
 
 int main(int num__,char ** filename){
-	
+
 	FILENAME=aloc(1000);
 	char * save_filename=aloc(100);
 	strcpy(save_filename,filename[1]);
 	strcat(filename[1],".c");
 	strcpy(FILENAME,filename[1]);
 	createCFile(FILENAME);
-	writeCFile(FILENAME);
+	printf(" ");
+	//writeCFile(FILENAME);
 	readLineByLine(save_filename);
 	finishCfile(FILENAME);
 	writeToCFile(FILENAME,"char * aloChar(int n){char * name;name=(char *)malloc(n*sizeof(char));if ( name == NULL){printf(\"memory error\");}return name;}");
@@ -46,14 +61,30 @@ void * readLineByLine(char * filename){
 	char * buffer2=aloc(3000);
 	FILE * f;
 	char c;
+	int saveSpaces=0;
 	int yi=0;
 	f=fopen(filename,"r");
 	while((c=fgetc(f))!=EOF){
-		if(c!='\n' && c!=' ' && c!='\0' && c!='\t' && c!='\r'){
-			buffer[yi]=c;
-		//	printf("%c----\n",c );
-			yi++;
+		if(c=='`'){
+			saveSpaces+=1;
+			if(saveSpaces%2==0){
+				saveSpaces=0;
+			}
 		}
+		if(saveSpaces==1){
+				if(c!='\n'  && c!='\0' && c!='\t' && c!='\r'){
+					buffer[yi]=c;
+			//		printf("%c----\n",c );
+					yi++;
+				}
+		}else{
+			if(c!='\n'  && c!=' ' && c!='\0' && c!='\t' && c!='\r'){
+				buffer[yi]=c;
+			//	printf("%c----\n",c );
+				yi++;
+			}
+		}
+
 	}
 
 	//printf("%s",buffer);
@@ -107,7 +138,7 @@ void scannText(char * text){
 			stiv[l]=text[i];
 			//printf("2-%s-%c\n",stiv,text[i]);
 			l++;
-			if(strcmp(stiv,"print")==0 || strcmp(stiv,"true")==0 || strcmp(stiv,"false")==0 || strcmp(stiv,"bool")==0 ||strcmp(stiv,"if")==0 || strcmp(stiv,"forhile")==0 || strcmp(stiv,"int")==0 ||  strcmp(stiv,"else")==0 || strcmp(stiv,"elif")==0 || strcmp(stiv,"float")==0 || strcmp(stiv,"import")==0 || strcmp(stiv,"Linux(C)")==0 || strcmp(stiv,"define")==0 || strcmp(stiv,"input")==0){
+			if(strcmp(stiv,"print")==0 || strcmp(stiv,"true")==0 || strcmp(stiv,"false")==0 || strcmp(stiv,"bool")==0 ||strcmp(stiv,"if")==0 || strcmp(stiv,"forhile")==0 || strcmp(stiv,"int")==0 ||  strcmp(stiv,"else")==0 || strcmp(stiv,"elif")==0 || strcmp(stiv,"float")==0 || strcmp(stiv,"import")==0 || strcmp(stiv,"Linux(C)")==0 || strcmp(stiv,"define")==0 || strcmp(stiv,"input")==0 || strcmp(stiv,"import")==0){
 
 				for(int y=0;y<=l;y++){
 					if(stiv[y]!=' '  || stiv[y]!='\n'){
@@ -135,6 +166,7 @@ void createCFile(char * filename){
 
 	FILE * f;
 	f=fopen(filename,"w");
+	fprintf(f,"#include<stdio.h>\n#include<string.h>\n#include<stdio.h>\nchar * aloChar(int n);\nint main() \n{ ");
 	fclose(f);
 
 }
@@ -183,65 +215,73 @@ void interpretData(char ** al){
 	//printf("__________________________");
 	int ok__=0;
 	int on=0;
+	int f=0;
 	while(al[y][0]!='\0'){
 
 				//evaluateFunctions(al[y]);
-				printf("%s\n",al[y]);
+			//	printf("%s\n",al[y]);
+
 				if(strcmp(al[y],"print")==0 && al[y+1][0]=='`'){
 					writeToCFile(FILENAME,"\n\tprintf(\"");
 
-					for(int f=y+2;al[f][0]!='`';f++){
+					for( f=y+2;al[f][0]!='`';f++){
 						writeToCFile(FILENAME,al[f]);
 					}
 					writeToCFile(FILENAME,"\");");
-						on=1;				
+					y=f+1;
+						on=1;
 				}else if(strcmp(al[y],"print")==0 && al[y+1][0]!='`'){
 					writeToCFile(FILENAME,"\n\tprintf(\"%d\"");
 
-					for(int f=y+1;al[f][0]!=';';f++){
+					for( f=y+1;al[f][0]!=';';f++){
 						writeToCFile(FILENAME,",");
 						writeToCFile(FILENAME,al[f]);
 					}
 					writeToCFile(FILENAME,");");
+					y=f;
 					on=1;
 				}
 				if(al[y][0]=='<' && strcmp(al[y+1],"int")==0 &&al[y+2][0]=='>' ){
 					writeToCFile(FILENAME,"\n\tint ");
-					for(int f=y+3;al[f][0]!=';';f++){
+					for( f=y+3;al[f][0]!=';';f++){
 						writeToCFile(FILENAME,al[f]);
-					}	
+					}
 					writeToCFile(FILENAME,";");
-					on=1;				
+					y=f;
+					on=1;
 				}
 				if(al[y][0]=='<' && strcmp(al[y+1],"float")==0 &&al[y+2][0]=='>' ){
 					writeToCFile(FILENAME,"\n\tfloat ");
-					for(int f=y+3;al[f][0]!=';';f++){
+					for( f=y+3;al[f][0]!=';';f++){
 						writeToCFile(FILENAME,al[f]);
-					}	
-					writeToCFile(FILENAME,";");	
-					on=1;			
+					}
+					writeToCFile(FILENAME,";");
+					y=f;
+					on=1;
 				}
 				if(al[y][0]=='<' && strcmp(al[y+1],"bool")==0 &&al[y+2][0]=='>' ){
 					writeToCFile(FILENAME,"\n\tint ");
-					for(int f=y+3;al[f][0]!=';';f++){
+					for( f=y+3;al[f][0]!=';';f++){
 						writeToCFile(FILENAME,al[f]);
-					}	
-					writeToCFile(FILENAME,";");	
-					on=1;			
+					}
+					writeToCFile(FILENAME,";");
+					y=f;
+					on=1;
 				}
 				if(al[y][0]=='<' && strcmp(al[y+1],"char")==0 &&al[y+2][0]=='>' ){
 					writeToCFile(FILENAME,"\n\tchar ");
-					for(int f=y+3;al[f][0]!=';';f++){
+					for( f=y+3;al[f][0]!=';';f++){
 						writeToCFile(FILENAME,al[f]);
-					}	
-					writeToCFile(FILENAME,";");	
-					on=1;			
+					}
+					writeToCFile(FILENAME,";");
+					y=f;
+					on=1;
 				}
 				if(al[y][0]=='<' && strcmp(al[y+1],"string")==0 &&al[y+2][0]=='>' ){
 					//int countWords=0;
 					//int startWords=0;
 					writeToCFile(FILENAME,"\n\tchar * ");
-					for(int f=y+3;al[f][0]!=';';f++){
+					for( f=y+3;al[f][0]!=';';f++){
 						writeToCFile(FILENAME,al[f]);
 						if (al[f][0]=='='){
 							writeToCFile(FILENAME,"aloChar(100);\n\t");
@@ -254,15 +294,16 @@ void interpretData(char ** al){
 							}
 							countWords++;
 						}*/
-					}	
-					writeToCFile(FILENAME,";");	
-					on=1;			
+					}
+					writeToCFile(FILENAME,";");
+					y=f;
+					on=1;
 				}
 
 
 				if(strcmp(al[y],"forhile")==0 ){
 					int isWhile=0;
-					for(int f=y+1;al[f][0]!='{';f++){
+					for( f=y+1;al[f][0]!='{';f++){
 						if(al[f][0]==';'){
 							isWhile=1;
 						}
@@ -272,7 +313,7 @@ void interpretData(char ** al){
 					}else if( isWhile==1){
 						writeToCFile(FILENAME,"\n\t for( ");
 					}
-					for(int f=y+1;al[f][0]!='{';f++){
+					for( f=y+1;al[f][0]!='{';f++){
 						if(al[f][0]=='<' && al[f+2][0]=='>' &&  strcmp(al[f+1],"int")==0  ){
 							writeToCFile(FILENAME," int ");
 							f+=2;
@@ -288,21 +329,24 @@ void interpretData(char ** al){
 						//	writeToCFile(FILENAME," )");
 						//}
 					}
-					
+
 					writeToCFile(FILENAME,"){");
+					y=f;
 					on=1;
 				}
 				if(al[y][0]=='}' && (al[y-1][0]==';' || al[y-1][0]=='{')){
 					writeToCFile(FILENAME,"\n\t}");
 					on=1;
+					//y=f;
 				}
 				if(strcmp(al[y],"if")==0){
 					writeToCFile(FILENAME,"\n\t if (");
-					for(int f=y+1;al[f][0]!='{';f++){
+					for( f=y+1;al[f][0]!='{';f++){
 						writeToCFile(FILENAME,al[f]);
 					}
 					writeToCFile(FILENAME,"){");
 					on=1;
+					y=f;
 				}
 				if(strcmp(al[y],"input")==0 && al[y+1][0]=='(' && al[y+3][0]==')'){
 					writeToCFile(FILENAME,"\n\tscanf(");
@@ -311,6 +355,7 @@ void interpretData(char ** al){
 					writeToCFile(FILENAME,al[y+2]);
 					writeToCFile(FILENAME,");");
 					on=1;
+					y=y+4;
 				}
 				if(al[y]=="#"){
 						if(strcmp(al[y+1],"define")==0){
@@ -326,13 +371,14 @@ void interpretData(char ** al){
 						if(ok__!=0){
 							break;
 						}
+					y=y+2;
 					on=1;
 				}
-			//if(on!=1){
-			//	writeToCFile(FILENAME,al[y]);
-			//}else{
-			//	on=0;
-			//}
+			if(on!=1){
+				writeToCFile(FILENAME,al[y]);
+			}else{
+				on=0;
+			}
 
 		y++;
 	}
@@ -389,9 +435,9 @@ void executeCommandsLinux(){
 	strcat(addCompile1,FILENAME);
 	strcat(addCompile1," -w");
 	system(addCompile1);
-	//strcat(remove,"rm ");
+	strcat(remove,"rm ");
 	strcat(remove,FILENAME);
-	system(remove);
+//	system(remove);
 	system("./pr_1.out");
 }
 
@@ -407,6 +453,3 @@ char ** alocScan(int  n,int l){
 	}
 	return vec;
 }
-
-
-
