@@ -28,6 +28,8 @@ Here is my language syntax:
 		j++;
 	}
 
+-define Linux(c) - here we say to transcompile the code to c language (because i wanted to transcompile to bash or other languages)
 There are no while or for loops just a loop capable of doing while and for.
 -i called forhile(for while)
 -print statement( synatx: print ` <what to print>` or print <variable_name>)
+-input is cable of getting the input from user
